@@ -1,9 +1,18 @@
 [package]
 name = "sendinblue"
 version = "0.1.0"
-authors = ["Arco Hsieh <yiyezhihen@gmail.com>"]
+authors = ["Arco Hsieh <yiyezhihen@gmail.com>", "Rosehsu <rosehsu47@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+keywords = ["api"]
+description = "SendinBlue's API v3 Rust unofficial Library"
+homepage = "https://github.com/WF-Engineering/sendinblue"
+repository = "https://github.com/WF-Engineering/sendinblue"
 
 [dependencies]
+base64 = "0.12.0"
+itertools = "0.9"
+log = "0.4"
+reqwest = { version = "0.10", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

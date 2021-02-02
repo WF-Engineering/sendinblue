@@ -1,7 +1,11 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+#[macro_use]
+extern crate log;
+
+mod client;
+mod mailer;
+mod transactional;
+
+pub use mailer::Mailer;
+pub use transactional::*;
+
+pub type Sendinblue = client::Client;
