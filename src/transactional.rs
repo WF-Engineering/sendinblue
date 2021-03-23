@@ -78,6 +78,36 @@ impl TransactionalBodyBuilder {
   pub fn create(self) -> TransactionalBody {
     self.0
   }
+
+  pub fn add_values(self, values: Value) -> Self {
+    let mut inner = self.0;
+
+    if let Value::Object(values) = values {
+      for (key, value) in values {
+        match value {
+          Value::Null => {
+            continue;
+          }
+          Value::Bool(b) => {
+            inner.params[key] = Value::Bool(b);
+          }
+          Value::Number(n) => {
+            inner.params[key] = Value::Number(n);
+          }
+          Value::String(s) => {
+            inner.params[key] = Value::String(s);
+          }
+          Value::Array(a) => {
+            inner.params[key] = serde_json::to_value(a).unwrap();
+          }
+          Value::Object(o) => {
+            inner.params[key] = serde_json::to_value(o).unwrap();
+          }
+        }
+      }
+    };
+    Self(inner)
+  }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
