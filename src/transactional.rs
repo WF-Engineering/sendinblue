@@ -137,3 +137,190 @@ impl Sendinblue {
       .await
   }
 }
+
+#[cfg(test)]
+mod test {
+  use crate::*;
+
+  use dotenv::dotenv;
+  use serde::Serialize;
+
+  #[derive(Debug, Serialize)]
+  struct Required {
+    brand_name: String,
+    banner: String,
+    homepage_link: String,
+    facebook_link: String,
+    instagram_link: String,
+  }
+
+  #[derive(Debug, Serialize)]
+  struct OrderList {
+    list_name: String,
+    orders: Vec<Order>,
+  }
+
+  #[derive(Debug, Serialize, Clone)]
+  struct Order {
+    order_number: String,
+    address: String,
+  }
+
+  #[derive(Debug, Serialize, Clone)]
+  struct OneOrder {
+    order: Order,
+    count: i32,
+  }
+
+  #[test]
+  fn test_transactional_body_with_add_values() {
+    dotenv().ok();
+    std::env::set_var("RUST_LOG", "debug");
+    let _ = env_logger::builder().is_test(true).try_init();
+
+    let sender = Mailer {
+      name: "sender_name".to_string(),
+      email: "sender_email".to_string(),
+    };
+
+    let receiver = Mailer {
+      name: "receiver_name".to_string(),
+      email: "receiver_email".to_string(),
+    };
+
+    let required = Required {
+      brand_name: "brand_name".to_string(),
+      banner: "banner".to_string(),
+      homepage_link: "homepage_link".to_string(),
+      facebook_link: "facebook_link".to_string(),
+      instagram_link: "instagram_link".to_string(),
+    };
+
+    let old_payload = TransactionalBody::builder()
+      .set_sender(sender.clone())
+      .add_to_mailer(receiver.clone())
+      .reply_to(sender.clone())
+      .template_id(36)
+      .subject("TEST SENDINBLUE".to_string())
+      .add_params("brand_name", required.brand_name.clone())
+      .add_params("banner", required.banner.clone())
+      .add_params("homepage_link", required.homepage_link.clone())
+      .add_params("facebook_link", required.facebook_link.clone())
+      .add_params("instagram_link", required.instagram_link.clone())
+      .create();
+
+    debug!("old_payload: {:?}", old_payload);
+
+    let new_payload = TransactionalBody::builder()
+      .set_sender(sender.clone())
+      .add_to_mailer(receiver)
+      .reply_to(sender)
+      .template_id(36)
+      .subject("TEST SENDINBLUE".to_string())
+      .add_values(serde_json::to_value(required).unwrap())
+      .create();
+
+    debug!("new_payload: {:?}", new_payload);
+
+    assert_eq!(old_payload.params, new_payload.params);
+  }
+
+  #[test]
+  fn test_transactional_body_with_add_values_and_array() {
+    dotenv().ok();
+    std::env::set_var("RUST_LOG", "debug");
+    let _ = env_logger::builder().is_test(true).try_init();
+
+    let sender = Mailer {
+      name: "sender_name".to_string(),
+      email: "sender_email".to_string(),
+    };
+
+    let receiver = Mailer {
+      name: "receiver_name".to_string(),
+      email: "receiver_email".to_string(),
+    };
+
+    let required = Required {
+      brand_name: "brand_name".to_string(),
+      banner: "banner".to_string(),
+      homepage_link: "homepage_link".to_string(),
+      facebook_link: "facebook_link".to_string(),
+      instagram_link: "instagram_link".to_string(),
+    };
+
+    let order_1 = Order {
+      order_number: "YGORDER1".to_string(),
+      address: "ADDRESS1".to_string(),
+    };
+
+    let order_2 = Order {
+      order_number: "YGORDER2".to_string(),
+      address: "ADDRESS2".to_string(),
+    };
+
+    let order_list = OrderList {
+      list_name: "TESTORDERLIST".to_string(),
+      orders: vec![order_1, order_2],
+    };
+
+    let payload = TransactionalBody::builder()
+      .set_sender(sender.clone())
+      .add_to_mailer(receiver)
+      .reply_to(sender)
+      .template_id(36)
+      .subject("TEST SENDINBLUE".to_string())
+      .add_values(serde_json::to_value(required).unwrap())
+      .add_values(serde_json::to_value(order_list).unwrap())
+      .create();
+
+    debug!("payload: {:?}", payload);
+  }
+
+  #[test]
+  fn test_transactional_body_with_add_values_and_object() {
+    dotenv().ok();
+    std::env::set_var("RUST_LOG", "debug");
+    let _ = env_logger::builder().is_test(true).try_init();
+
+    let sender = Mailer {
+      name: "sender_name".to_string(),
+      email: "sender_email".to_string(),
+    };
+
+    let receiver = Mailer {
+      name: "receiver_name".to_string(),
+      email: "receiver_email".to_string(),
+    };
+
+    let required = Required {
+      brand_name: "brand_name".to_string(),
+      banner: "banner".to_string(),
+      homepage_link: "homepage_link".to_string(),
+      facebook_link: "facebook_link".to_string(),
+      instagram_link: "instagram_link".to_string(),
+    };
+
+    let order_1 = Order {
+      order_number: "YGORDER1".to_string(),
+      address: "ADDRESS1".to_string(),
+    };
+
+    let order = OneOrder {
+      order: order_1,
+      count: 2,
+    };
+
+    let payload = TransactionalBody::builder()
+      .set_sender(sender.clone())
+      .add_to_mailer(receiver)
+      .reply_to(sender)
+      .template_id(36)
+      .subject("TEST SENDINBLUE".to_string())
+      .add_values(serde_json::to_value(required).unwrap())
+      .add_values(serde_json::to_value(order).unwrap())
+      .create();
+
+    debug!("payload: {:?}", payload);
+  }
+}
