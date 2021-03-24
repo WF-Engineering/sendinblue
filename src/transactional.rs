@@ -130,6 +130,7 @@ impl Sendinblue {
 
     reqwest::Client::new()
       .post(&url)
+      .header("api-key", self.api_key.clone())
       .json(&body)
       .send()
       .await?
